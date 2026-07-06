@@ -1,0 +1,35 @@
+Sql activity query
+
+-- Use this query in script activity under ForEach
+
+SELECT COUNT(*) AS tgt_count
+FROM OPENROWSET(
+    BULK 'bronze/@{item().SchemaName}/@{item().TableName}/*.parquet',
+    DATA_SOURCE = 'FintechDataExternal',
+    FORMAT = 'PARQUET'
+) AS rows;
+
+-- Run this query before setting up SynapseServerless Linkedin Service
+-- In SynapseServerless Linkedin Service use ReadExternalDataDB as database
+
+CREATE DATABASE ReadExternalDataDB; 
+
+CREATE EXTERNAL DATA SOURCE FintechDataExternal
+WITH (
+    LOCATION = 'https://<your_storage_account>.dfs.core.windows.net/<container_name>'
+);
+
+
+-- Use this Query in Lookup activity
+
+SELECT 
+    TABLE_SCHEMA AS SchemaName,
+    TABLE_NAME AS TableName
+FROM 
+    INFORMATION_SCHEMA.TABLES
+WHERE 
+    TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = 'fintech'
+ORDER BY 
+    SchemaName, TableName;
+	
+	
